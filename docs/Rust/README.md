@@ -1,0 +1,3 @@
+# Rust
+
+> Welcome to Rust !
