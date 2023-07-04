@@ -1,5 +1,7 @@
 <!-- docs/_sidebar.md -->
 
+* [Main](README.md)
+
 * [C++](C++/)
 ** [References](C++/references.md)
 
