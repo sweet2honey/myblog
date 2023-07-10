@@ -125,88 +125,35 @@ where
 
 - 访问型迭代器：
 
-  `keys(&self) -> Keys<'_, K, V> `
+  | Method                 | Return Type           | Iterator                                                     |
+  | ---------------------- | --------------------- | ------------------------------------------------------------ |
+  | `keys(&self)`          | `Keys<'_, K, V>`      | `impl<'a, K, V> Iterator for Keys<'a, K, V>`<br />`type Item = &'a K` |
+  | `values(&self)`        | `Values<'_, K, V>`    | `impl<'a, K, V> Iterator for Values<'a, K, V>`<br />`type Item = &'a V` |
+  | `value_mut(&mut self)` | `ValuesMut<'_, K, V>` | `impl<'a, K, V> Iterator for ValuesMut<'a, K, V>`<br/>`type Item = &'a mut V` |
+  | `iter(&self)`          | `Iter<'_, K, V>`      | `impl<'a, K, V> Iterator for Iter<'a, K, V>`<br/>`type Item = (&'a K, &'a V)` |
+  | `iter_mut(&mut self)`  | `IterMut<'_, K, V>`   | `impl<'a, K, V> Iterator for IterMut<'a, K, V>`<br/>`type Item = (&'a K, &'a mut V)` |
 
-  ```rust
-  impl<'a, K, V> Iterator for Keys<'a, K, V>
-  type Item = &'a K
-  ```
-
-  **可以看到 key 是不支持修改的。**
-
-  
-
-  `values(&self) -> Values<'_, K, V>`
-
-  `values_mut(&mut self) -> ValuesMut<'_, K, V> `
-
-  ```rust
-  impl<'a, K, V> Iterator for Values<'a, K, V>
-  type Item = &'a V
-  
-  impl<'a, K, V> Iterator for ValuesMut<'a, K, V>
-  type Item = &'a mut V
-  ```
-
-  
-
-  `iter(&self) -> Iter<'_, K, V> `
-
-  `iter_mut(&mut self) -> IterMut<'_, K, V>`
-
-  ```rust
-  impl<'a, K, V> Iterator for Iter<'a, K, V>
-  type Item = (&'a K, &'a V)
-  
-  impl<'a, K, V> Iterator for IterMut<'a, K, V>
-  type Item = (&'a K, &'a mut V)
-  ```
+  注意到：无论使用哪种迭代器， **`K` 都是是不支持修改的**。
 
 - 消费型迭代器：
 
-  `into_keys(self) -> IntoKeys<K, V>`
-
-  `into_values(self) -> IntoValues<K, V>`
-
-  ```rust
-  impl<K, V> Iterator for IntoKeys<K, V>
-  type Item = K
+  | Method              | Return Type        | Iterator                                                     |
+  | ------------------- | ------------------ | ------------------------------------------------------------ |
+  | `into_keys(self)`   | `IntoKeys<K, V>`   | `impl<K, V> Iterator for IntoKeys<K, V>`<br/>`type Item = K` |
+  | `into_values(self)` | `IntoValues<K, V>` | `impl<K, V> Iterator for IntoValues<K, V>`<br/>`type Item = V` |
   
-  impl<K, V> Iterator for IntoValues<K, V>
-  type Item = V
-  ```
+- clear/drain/retai：
 
-- drain/retain/clear：
-
-  `clear(&mut self)`
-
-  `drain(&mut self) -> Drain<'_, K, V>`：移除全部，且可以访问到值（最后一口气）
-
+  | Method                                                       | Return Type                | Iterator                                                     |
+  | ------------------------------------------------------------ | -------------------------- | ------------------------------------------------------------ |
+  | `clear(&mut self)`                                           | `()`                       | N/A                                                          |
+  | `drain(&mut self)`                                           | `Drain<'_, K, V>`          | `impl<'a, K, V> Iterator for Drain<'a, K, V>`<br/>`type Item = (K, V)` |
+  | `drain_filter<F>(&mut self, pred: F) -> DrainFilter<'_, K, V, F>`<br/>`where`<br/>    `F: FnMut(&K, &mut V) -> bool,` | `DrainFilter<'_, K, V, F>` | `impl<K, V, F> Iterator for DrainFilter<'_, K, V, F>`<br/>`where`<br/>    `F: FnMut(&K, &mut V) -> bool,`<br/>`type Item = (K, V)` |
+  | `retain<F>(&mut self, f: F)`<br />`where`<br /> `    F: FnMut(&K, &mut V)) -> bool` |                            |                                                              |
   
-
-  `drain_filter<F>(&mut self, pred: F) -> DrainFilter<'_, K, V, F>
-  where
-      F: FnMut(&K, &mut V) -> bool,`：根据返回值决定是否移除
-
+  `drain`可以访问到值，遍历过程中所有权发生了转移；`drain_filter` 则根据返回值决定是否移除，如果 filter 决定不移除，那么 `(K, V)` 所有权归还到 map 中。
   
-
-  `retain<F>(&mut self, f: F)
-  where
-      F: FnMut(&K, &mut V) -> bool,`：根据返回值决定是否保留
-
-  ```rust
-  impl<'a, K, V> Iterator for Drain<'a, K, V>
-  type Item = (K, V)
-  
-  impl<K, V, F> Iterator for DrainFilter<'_, K, V, F>
-  where
-      F: FnMut(&K, &mut V) -> bool,
-  type Item = (K, V)
-  ```
-
-  注意到，drain 迭代器中的关联类型是 `(K, V)`，就是迭代过程中会转移所有权到 Fn 里面，如果 filter 决定不移除，那么可能又 move 回 map 中叭。
-
-  
+  `retain` 则是保留符合条件的元素。
 
 ### hash_map::Entry
 
