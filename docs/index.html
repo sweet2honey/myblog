@@ -18,7 +18,7 @@
       repo: '',
       loadNavbar: true,
       loadSidebar: true,
-      subMaxLevel: 1
+      subMaxLevel: 2
     }
   </script>
   <!-- Docsify v4 -->
@@ -33,6 +33,14 @@
 
   <!--- cmake highlight-->
   <script src="//cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-cmake.js"></script>
+
+  <!--- mermaid support-->
+  <script type="module">
+    import mermaid from "https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.esm.min.mjs";
+    mermaid.initialize({ startOnLoad: true });
+    window.mermaid = mermaid;
+  </script>
+  <script src="//unpkg.com/docsify-mermaid@2.0.0/dist/docsify-mermaid.js"></script>
 
 </body>
 

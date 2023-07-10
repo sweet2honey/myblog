@@ -6,5 +6,5 @@
 ** [References](C++/references.md)
 
 * [Rust](Rust/)
-** [hashmap](Rust/hashmap.md)
+** [HashMap 文档走读](Rust/hashmap.md)
 ** [References](Rust/references.md)

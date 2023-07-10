@@ -113,53 +113,36 @@ where
 
 ### HashMap 的 Methods
 
-- 构造：
+#### 构造
 
-  `new()` 、`new_with_capacity()`：初始化一个 map， 附带初始容量。
+`new()` 、`new_with_capacity()`：初始化一个 map， 附带初始容量。
 
-  `with_hasher()`、` with_capacity_and_hasher()`：可以指定 hasher。
+`with_hasher()`、` with_capacity_and_hasher()`：可以指定 hasher。
 
-- 基本信息：
+#### 基本信息
 
-  `capacity()`、`len()`、`is_empty()`、`hasher()`
+`capacity()`、`len()`、`is_empty()`、`hasher()`
 
-- 访问型迭代器：
+#### 访问型迭代器
 
-  | Method                 | Return Type           | Iterator                                                     |
-  | ---------------------- | --------------------- | ------------------------------------------------------------ |
-  | `keys(&self)`          | `Keys<'_, K, V>`      | `impl<'a, K, V> Iterator for Keys<'a, K, V>`<br />`type Item = &'a K` |
-  | `values(&self)`        | `Values<'_, K, V>`    | `impl<'a, K, V> Iterator for Values<'a, K, V>`<br />`type Item = &'a V` |
-  | `value_mut(&mut self)` | `ValuesMut<'_, K, V>` | `impl<'a, K, V> Iterator for ValuesMut<'a, K, V>`<br/>`type Item = &'a mut V` |
-  | `iter(&self)`          | `Iter<'_, K, V>`      | `impl<'a, K, V> Iterator for Iter<'a, K, V>`<br/>`type Item = (&'a K, &'a V)` |
-  | `iter_mut(&mut self)`  | `IterMut<'_, K, V>`   | `impl<'a, K, V> Iterator for IterMut<'a, K, V>`<br/>`type Item = (&'a K, &'a mut V)` |
+| Method                 | Return Type           | Iterator                                                     |
+| ---------------------- | --------------------- | ------------------------------------------------------------ |
+| `keys(&self)`          | `Keys<'_, K, V>`      | `impl<'a, K, V> Iterator for Keys<'a, K, V>`<br />`type Item = &'a K` |
+| `values(&self)`        | `Values<'_, K, V>`    | `impl<'a, K, V> Iterator for Values<'a, K, V>`<br />`type Item = &'a V` |
+| `value_mut(&mut self)` | `ValuesMut<'_, K, V>` | `impl<'a, K, V> Iterator for ValuesMut<'a, K, V>`<br/>`type Item = &'a mut V` |
+| `iter(&self)`          | `Iter<'_, K, V>`      | `impl<'a, K, V> Iterator for Iter<'a, K, V>`<br/>`type Item = (&'a K, &'a V)` |
+| `iter_mut(&mut self)`  | `IterMut<'_, K, V>`   | `impl<'a, K, V> Iterator for IterMut<'a, K, V>`<br/>`type Item = (&'a K, &'a mut V)` |
 
-  注意到：无论使用哪种迭代器， **`K` 都是是不支持修改的**。
+注意到：无论使用哪种迭代器， **`K` 都是是不支持修改的**。
 
-- 消费型迭代器：
+#### 消费型迭代器
 
-  | Method              | Return Type        | Iterator                                                     |
-  | ------------------- | ------------------ | ------------------------------------------------------------ |
-  | `into_keys(self)`   | `IntoKeys<K, V>`   | `impl<K, V> Iterator for IntoKeys<K, V>`<br/>`type Item = K` |
-  | `into_values(self)` | `IntoValues<K, V>` | `impl<K, V> Iterator for IntoValues<K, V>`<br/>`type Item = V` |
-  
-- clear/drain/retai：
+| Method              | Return Type        | Iterator                                                     |
+| ------------------- | ------------------ | ------------------------------------------------------------ |
+| `into_keys(self)`   | `IntoKeys<K, V>`   | `impl<K, V> Iterator for IntoKeys<K, V>`<br/>`type Item = K` |
+| `into_values(self)` | `IntoValues<K, V>` | `impl<K, V> Iterator for IntoValues<K, V>`<br/>`type Item = V` |
 
-  | Method                                                       | Return Type                | Iterator                                                     |
-  | ------------------------------------------------------------ | -------------------------- | ------------------------------------------------------------ |
-  | `clear(&mut self)`                                           | `()`                       | N/A                                                          |
-  | `drain(&mut self)`                                           | `Drain<'_, K, V>`          | `impl<'a, K, V> Iterator for Drain<'a, K, V>`<br/>`type Item = (K, V)` |
-  | `drain_filter<F>(&mut self, pred: F) -> DrainFilter<'_, K, V, F>`<br/>`where`<br/>    `F: FnMut(&K, &mut V) -> bool,` | `DrainFilter<'_, K, V, F>` | `impl<K, V, F> Iterator for DrainFilter<'_, K, V, F>`<br/>`where`<br/>    `F: FnMut(&K, &mut V) -> bool,`<br/>`type Item = (K, V)` |
-  | `retain<F>(&mut self, f: F)`<br />`where`<br /> `    F: FnMut(&K, &mut V)) -> bool` |                            |                                                              |
-  
-  `drain`可以访问到值，遍历过程中所有权发生了转移；`drain_filter` 则根据返回值决定是否移除，如果 filter 决定不移除，那么 `(K, V)` 所有权归还到 map 中。
-  
-  `retain` 则是保留符合条件的元素。
-
-### hash_map::Entry
-
-
-
-### ⚠️performance
+### ⚠️迭代器的性能 performance
 
 注意到文档中有关于 Performance 的描述：
 
@@ -175,6 +158,168 @@ where
 `iter()` `iter_mut()`
 
 `retain()`
+
+#### 清除和保留
+
+| Method                                                       | Return Type                | Iterator                                                     |
+| ------------------------------------------------------------ | -------------------------- | ------------------------------------------------------------ |
+| `clear(&mut self)`                                           | `()`                       | N/A                                                          |
+| `drain(&mut self)`                                           | `Drain<'_, K, V>`          | `impl<'a, K, V> Iterator for Drain<'a, K, V>`<br/>`type Item = (K, V)` |
+| `drain_filter<F>(&mut self, pred: F) -> DrainFilter<'_, K, V, F>`<br/>`where`<br/>    `F: FnMut(&K, &mut V) -> bool,` | `DrainFilter<'_, K, V, F>` | `impl<K, V, F> Iterator for DrainFilter<'_, K, V, F>`<br/>`where`<br/>    `F: FnMut(&K, &mut V) -> bool,`<br/>`type Item = (K, V)` |
+| `retain<F>(&mut self, f: F)`<br />`where`<br /> `    F: FnMut(&K, &mut V)) -> bool` |                            |                                                              |
+
+`drain`可以访问到值，遍历过程中所有权发生了转移；`drain_filter` 则根据返回值决定是否移除，如果 filter 决定不移除，那么 `(K, V)` 所有权归还到 map 中。
+
+`retain` 则是保留符合条件的元素。
+
+#### 容量调整
+
+`reserve(&mut self, additional: usize)`
+
+`try_reserve(&mut self, additional: usize)`
+
+`shrink_to_fit(&mut self)`
+
+`shrink_to(&mut self, min_capacity: usize)`
+
+注意一下预留容量相关的接口入参含义是“额外的”，会跟 C++ 有点不一样。
+
+#### 添加
+
+`insert(&mut self, k: K, v: V) -> Option<V>`，返回旧的值（如果有）；
+
+`fn try_insert(
+    &mut self,
+    key: K,
+    value: V
+) -> Result<&mut V, OccupiedError<'_, K, V>>`，返回新值可变引用，或者 `OccupiedError`。
+
+看看 `OccupiedError`：
+
+```rust
+pub struct OccupiedError<'a, K: 'a, V: 'a> {
+    pub entry: OccupiedEntry<'a, K, V>, // Entry 后面会看
+    pub value: V, // 没有插入的值（真是一点不浪费啊）
+}
+```
+
+#### ✨查询
+
+它终于来辣🌶！HashMap 的查询相关接口返回 `Option` 和 `Entry`，就是实现各种链式调用、函数式编程的关键。
+
+*这部分的接口基本都对 `K` `Q` 有约束，具体看文档吧，就不赘述*。
+
+> K: [Borrow](https://doc.rust-lang.org/stable/std/borrow/trait.Borrow.html)<Q>
+>
+> [Borrow in std::borrow - Rust (rust-lang.org)](https://doc.rust-lang.org/stable/std/borrow/trait.Borrow.html)
+
+
+
+`fn contains_key<Q>(&self, k: &Q) -> bool`
+
+`fn get<Q>(&self, k: &Q) -> Option<&V>`
+
+`fn get_key_value<Q>(&self, k: &Q) -> Option<(&K, &V)>`
+
+见名知义。
+
+
+
+```rust
+fn get_many_mut<Q, const N: usize>(
+    &mut self,
+    ks: [&Q; N]
+) -> Option<[&mut V; N]>
+
+unsafe fn get_many_unchecked_mut<Q, const N: usize>(
+    &mut self,
+    ks: [&Q; N]
+) -> Option<[&mut V; N]>
+```
+
+ 一次获取若干个 key 对应值的可变引用；
+
+前者：`None` will be returned if any of the keys are duplicates or missing.
+
+后者：`None` will be returned if any of the keys are missing. （不检查 key 是否重复）
+
+
+
+`fn entry(&mut self, key: K) -> Entry<'_, K, V>`
+
+这个太重要了，下一节见～
+
+TODO：这里的 key 为什么是 `K`，不 borrow 了？
+
+
+
+#### 删除
+
+```rust
+pub fn remove<Q>(&mut self, k: &Q) -> Option<V>
+where
+    K: Borrow<Q>,
+    Q: Hash + Eq + ?Sized,
+```
+
+返回被删除的值（如果有）；
+
+```rust
+pub fn remove_entry<Q>(&mut self, k: &Q) -> Option<(K, V)>
+where
+    K: Borrow<Q>,
+    Q: Hash + Eq + ?Sized,
+```
+
+返回被删除的键值对（如果有）；
+
+### hash_map::Entry
+
+```rust
+pub enum Entry<'a, K: 'a, V: 'a> {
+    Occupied(OccupiedEntry<'a, K, V>),
+    Vacant(VacantEntry<'a, K, V>),
+}
+```
+
+A **view** into a single entry in a map, which may either be vacant or occupied.
+
+这是一个“视图”！
+
+
+
+```mermaid
+stateDiagram-v2   
+		state "Entry" as e
+		state "OccupiedEntry" as oe
+		state "VacantEntry" as ve
+		state "&mut V" as mutv
+		
+		state var <<choice>>
+
+    HashMap --> e
+    e --> var: could be...
+    e --> e: and_modify
+    e --> mutv: or_insert/with/with_key
+    e --> oe: insert_entry(value)
+    
+    var --> oe
+    var --> ve
+    
+    ve --> oe: insert_entry(value)
+    ve --> mutv: insert(value)
+    
+    note right of oe
+    	通过 insert_entry 可以变成 Occupied
+    end note
+    oe --> mutv: get_mut()
+    
+    note right of mutv
+    	大多数方法返回值的可变引用
+    end note
+```
+
+
 
 ## 回到故事本身
 
