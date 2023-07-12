@@ -288,6 +288,10 @@ A **view** into a single entry in a map, which may either be vacant or occupied.
 
 
 
+#### variants 之间的转换关系
+
+除非用 `pattern matching` 匹配某个 variant，或者使用 `insert_entry` 方法获得 Occupied variant，否则 `Entry` 本身大多数方法都返回 `&mut V`。
+
 ```mermaid
 stateDiagram-v2   
 		state "Entry" as e
@@ -300,7 +304,7 @@ stateDiagram-v2
     HashMap --> e
     e --> var: could be...
     e --> e: and_modify
-    e --> mutv: or_insert/with/with_key
+    e --> mutv: or_insert/with/with_key/or_default
     e --> oe: insert_entry(value)
     
     var --> oe
@@ -319,7 +323,67 @@ stateDiagram-v2
     end note
 ```
 
+#### variant 的接口
 
+`Entry` 的 methods 实现都很简单，都是 `match self` 然后 blablabla，就返回不同 variant 本身函数调用的返回值～所以接下来看下两个 variant 大概提供什么 api 就好了。
+
+- `OccupiedEntry`：
+
+  ```rust
+  // 不能改 key
+  fn key(&self) -> &K
+  
+  // 注意到两个 mut 的区别在于有无生命周期约束
+  // Use get_mut if you want to keep the entry alive to maybe reuse it later. Otherwise use into_mut.
+  // reference: https://www.reddit.com/r/rust/comments/8a5swr/why_does_hashmaps_entryoccupied_have_get_mut_and/
+  fn get(&self) -> &V
+  fn get_mut(&mut self) -> &mut V
+  fn into_mut(self) -> &'a mut V // consumes itself
+  
+  // 返回原来的值
+  fn insert(&mut self, value: V) -> V
+  
+  // 见名知义
+  fn remove(self) -> V
+  fn remove_entry(self) -> (K, V)
+  fn replace_key(self) -> K
+  fn replace_entry(self, value: V) -> (K, V)
+  ```
+
+  在这里，进行 `Entry` variant 的匹配时候，其实就等同于 C++ 里面写 `it != map.end()`，当是一个有效的 entry 的时候，修改、删除、替换等操作都很好地表现出来了，舒服得很～
+
+  
+
+- `VacantEntry`
+
+  因为没有值，所以只能插入。
+
+  ```rust
+  fn key(&self) -> &K
+  
+  fn into_key(self) -> K
+  
+  fn insert(self, value: V) -> &'a mut V
+  fn insert_entry(self, value: V) -> OccupiedEntry<'a, K, V>
+  ```
+
+#### HashMap 偷鸡了？
+
+在 `Entry` 两个 variant 看实现的时候，发现全是 `self.base.xxx()`，然后发现再去看看：
+
+```rust
+pub struct VacantEntry<'a, K: 'a, V: 'a> {
+    base: base::RustcVacantEntry<'a, K, V>,
+}
+```
+
+又是一个 `base::`，最后能看到，原来是
+
+ `use hashbrown::hash_map as base;`
+
+好家伙你个标准库浓眉大眼的，竟然不是原生实现哦？？？
+
+[hashbrown::hash_map - Rust (docs.rs)](https://docs.rs/hashbrown/latest/hashbrown/hash_map/index.html)
 
 ## 回到故事本身
 
@@ -338,13 +402,17 @@ fn main() {
     assert_eq!(map.len(), 3);
 
     // find key '1', reduce value by 1, delete if value is 0.
-    match map.entry(1).and_modify(|i| *i -= 1) {
-        Entry::Occupied(e) => e.remove(),
-        _ => unreachable!(),
-    };
+    if let Entry::Occupied(e) = map.entry(1).and_modify(|i| *i -= 1) {
+        if *e.get() == 0 {
+            let old_val = e.remove();
+            assert_eq!(old_val, 1);
+        }
+    }
+  	// key not exist then do nothing...
 
     assert_eq!(map.len(), 2);
     assert_eq!(map.get(&1), None);
 }
 ```
 
+好耶，看（抄）文档真快乐～
