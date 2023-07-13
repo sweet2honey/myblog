@@ -2,7 +2,7 @@
 
 ## 前情提要
 
-Rust 的 `HashMap` 在官方的文档里面是一个人畜无害的东西，甚至还因为有 `*map.entry().or_default() += 1` 这种很 rusty 的东西，让人觉得十分有魔力。
+Rust 的 `HashMap` 在官方的样例里面里面是一个人畜无害的东西，甚至还因为有 `*map.entry().or_default() += 1` 这种很 rusty 的东西，让人觉得十分有魔力。
 
 
 
@@ -23,7 +23,6 @@ int main() {
     // find key '1', reduce value by 1, delete if value is 0
     if (const auto it = map.find(1); it != map.end()) {
         it->second--;
-        assert(it->second == 0);
         if (it->second == 0) {
             map.erase(it);
         }
@@ -119,9 +118,13 @@ where
 
 `with_hasher()`、` with_capacity_and_hasher()`：可以指定 hasher。
 
+
+
 #### 基本信息
 
 `capacity()`、`len()`、`is_empty()`、`hasher()`
+
+
 
 #### 访问型迭代器
 
@@ -135,12 +138,33 @@ where
 
 注意到：无论使用哪种迭代器， **`K` 都是是不支持修改的**。
 
+
+
 #### 消费型迭代器
 
-| Method              | Return Type        | Iterator                                                     |
-| ------------------- | ------------------ | ------------------------------------------------------------ |
-| `into_keys(self)`   | `IntoKeys<K, V>`   | `impl<K, V> Iterator for IntoKeys<K, V>`<br/>`type Item = K` |
-| `into_values(self)` | `IntoValues<K, V>` | `impl<K, V> Iterator for IntoValues<K, V>`<br/>`type Item = V` |
+| Method                                                       | Return Type                | Iterator                                                     |
+| ------------------------------------------------------------ | -------------------------- | ------------------------------------------------------------ |
+| `into_keys(self)`                                            | `IntoKeys<K, V>`           | `impl<K, V> Iterator for IntoKeys<K, V>`<br/>`type Item = K` |
+| `into_values(self)`                                          | `IntoValues<K, V>`         | `impl<K, V> Iterator for IntoValues<K, V>`<br/>`type Item = V` |
+| `drain(&mut self)`                                           | `Drain<'_, K, V>`          | `impl<'a, K, V> Iterator for Drain<'a, K, V>`<br/>`type Item = (K, V)` |
+| `drain_filter<F>(&mut self, pred: F) -> DrainFilter<'_, K, V, F>`<br/>`where`<br/>    `F: FnMut(&K, &mut V) -> bool,` | `DrainFilter<'_, K, V, F>` | `impl<K, V, F> Iterator for DrainFilter<'_, K, V, F>`<br/>`where`<br/>    `F: FnMut(&K, &mut V) -> bool,`<br/>`type Item = (K, V)` |
+
+上面几个迭代器，可以分别访问到 k、v 和 k-v，按需使用。
+
+`drain`可以访问到值，遍历过程中所有权发生了转移；`drain_filter` 则根据返回值决定是否移除，如果 filter 决定不移除，那么 `(K, V)` 所有权归还到 map 中。
+
+
+
+#### 清除和保留
+
+| Method                                                       | Return Type | Iterator |
+| ------------------------------------------------------------ | ----------- | -------- |
+| `clear(&mut self)`                                           | `()`        | N/A      |
+| `retain<F>(&mut self, f: F)`<br />`where`<br /> `    F: FnMut(&K, &mut V)) -> bool` | `()`        | N/A      |
+
+`retain` 是保留符合条件的元素。
+
+
 
 ### ⚠️迭代器的性能 performance
 
@@ -159,40 +183,35 @@ where
 
 `retain()`
 
-#### 清除和保留
 
-| Method                                                       | Return Type                | Iterator                                                     |
-| ------------------------------------------------------------ | -------------------------- | ------------------------------------------------------------ |
-| `clear(&mut self)`                                           | `()`                       | N/A                                                          |
-| `drain(&mut self)`                                           | `Drain<'_, K, V>`          | `impl<'a, K, V> Iterator for Drain<'a, K, V>`<br/>`type Item = (K, V)` |
-| `drain_filter<F>(&mut self, pred: F) -> DrainFilter<'_, K, V, F>`<br/>`where`<br/>    `F: FnMut(&K, &mut V) -> bool,` | `DrainFilter<'_, K, V, F>` | `impl<K, V, F> Iterator for DrainFilter<'_, K, V, F>`<br/>`where`<br/>    `F: FnMut(&K, &mut V) -> bool,`<br/>`type Item = (K, V)` |
-| `retain<F>(&mut self, f: F)`<br />`where`<br /> `    F: FnMut(&K, &mut V)) -> bool` |                            |                                                              |
-
-`drain`可以访问到值，遍历过程中所有权发生了转移；`drain_filter` 则根据返回值决定是否移除，如果 filter 决定不移除，那么 `(K, V)` 所有权归还到 map 中。
-
-`retain` 则是保留符合条件的元素。
 
 #### 容量调整
 
-`reserve(&mut self, additional: usize)`
+```rust
+fn reserve(&mut self, additional: usize)
+fn try_reserve(&mut self, additional: usize)
 
-`try_reserve(&mut self, additional: usize)`
-
-`shrink_to_fit(&mut self)`
-
-`shrink_to(&mut self, min_capacity: usize)`
+fn shrink_to_fit(&mut self)
+fn shrink_to(&mut self, min_capacity: usize)
+```
 
 注意一下预留容量相关的接口入参含义是“额外的”，会跟 C++ 有点不一样。
 
-#### 添加
 
-`insert(&mut self, k: K, v: V) -> Option<V>`，返回旧的值（如果有）；
 
-`fn try_insert(
+#### 插入
+
+```rust
+// 返回旧的值（如果有）
+fn insert(&mut self, k: K, v: V) -> Option<V>
+
+// 返回新值可变引用，或者 OccupiedError
+fn try_insert(
     &mut self,
     key: K,
     value: V
-) -> Result<&mut V, OccupiedError<'_, K, V>>`，返回新值可变引用，或者 `OccupiedError`。
+) -> Result<&mut V, OccupiedError<'_, K, V>>
+```
 
 看看 `OccupiedError`：
 
@@ -202,6 +221,8 @@ pub struct OccupiedError<'a, K: 'a, V: 'a> {
     pub value: V, // 没有插入的值（真是一点不浪费啊）
 }
 ```
+
+
 
 #### ✨查询
 
@@ -215,11 +236,12 @@ pub struct OccupiedError<'a, K: 'a, V: 'a> {
 
 
 
-`fn contains_key<Q>(&self, k: &Q) -> bool`
+```rust 
+fn contains_key<Q>(&self, k: &Q) -> bool
 
-`fn get<Q>(&self, k: &Q) -> Option<&V>`
-
-`fn get_key_value<Q>(&self, k: &Q) -> Option<(&K, &V)>`
+fn get<Q>(&self, k: &Q) -> Option<&V>
+fn get_key_value<Q>(&self, k: &Q) -> Option<(&K, &V)>
+```
 
 见名知义。
 
@@ -273,6 +295,8 @@ where
 
 返回被删除的键值对（如果有）；
 
+
+
 ### hash_map::Entry
 
 ```rust
@@ -323,6 +347,8 @@ stateDiagram-v2
     end note
 ```
 
+
+
 #### variant 的接口
 
 `Entry` 的 methods 实现都很简单，都是 `match self` 然后 blablabla，就返回不同 variant 本身函数调用的返回值～所以接下来看下两个 variant 大概提供什么 api 就好了。
@@ -367,6 +393,8 @@ stateDiagram-v2
   fn insert_entry(self, value: V) -> OccupiedEntry<'a, K, V>
   ```
 
+
+
 #### HashMap 偷鸡了？
 
 在 `Entry` 两个 variant 看实现的时候，发现全是 `self.base.xxx()`，然后发现再去看看：
@@ -395,23 +423,20 @@ fn main() {
     use std::collections::HashMap;
 
     // init map
-    let mut map = HashMap::new();
-    (1..=3).for_each(|i| {
-        map.insert(i, i);
-    });
+    let mut map = (1..=3).zip(1..=3).collect::<HashMap<_, _>>();
     assert_eq!(map.len(), 3);
 
     // find key '1', reduce value by 1, delete if value is 0.
     if let Entry::Occupied(e) = map.entry(1).and_modify(|i| *i -= 1) {
         if *e.get() == 0 {
             let old_val = e.remove();
-            assert_eq!(old_val, 1);
+            assert_eq!(old_val, 0);
         }
     }
-  	// key not exist then do nothing...
+    // key not exist then do nothing...
 
-    assert_eq!(map.len(), 2);
     assert_eq!(map.get(&1), None);
+    assert_eq!(map.len(), 2);
 }
 ```
 
