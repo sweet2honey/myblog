@@ -128,12 +128,12 @@ where
 
 #### 访问型迭代器
 
-| Method                 | Return Type           | Iterator                                                     |
-| ---------------------- | --------------------- | ------------------------------------------------------------ |
-| `keys(&self)`          | `Keys<'_, K, V>`      | `impl<'a, K, V> Iterator for Keys<'a, K, V>`<br />`type Item = &'a K` |
-| `values(&self)`        | `Values<'_, K, V>`    | `impl<'a, K, V> Iterator for Values<'a, K, V>`<br />`type Item = &'a V` |
-| `value_mut(&mut self)` | `ValuesMut<'_, K, V>` | `impl<'a, K, V> Iterator for ValuesMut<'a, K, V>`<br/>`type Item = &'a mut V` |
-| `iter(&self)`          | `Iter<'_, K, V>`      | `impl<'a, K, V> Iterator for Iter<'a, K, V>`<br/>`type Item = (&'a K, &'a V)` |
+| Method                 | Return Type           | Iterator                                                                             |
+| ---------------------- | --------------------- | ------------------------------------------------------------------------------------ |
+| `keys(&self)`          | `Keys<'_, K, V>`      | `impl<'a, K, V> Iterator for Keys<'a, K, V>`<br />`type Item = &'a K`                |
+| `values(&self)`        | `Values<'_, K, V>`    | `impl<'a, K, V> Iterator for Values<'a, K, V>`<br />`type Item = &'a V`              |
+| `value_mut(&mut self)` | `ValuesMut<'_, K, V>` | `impl<'a, K, V> Iterator for ValuesMut<'a, K, V>`<br/>`type Item = &'a mut V`        |
+| `iter(&self)`          | `Iter<'_, K, V>`      | `impl<'a, K, V> Iterator for Iter<'a, K, V>`<br/>`type Item = (&'a K, &'a V)`        |
 | `iter_mut(&mut self)`  | `IterMut<'_, K, V>`   | `impl<'a, K, V> Iterator for IterMut<'a, K, V>`<br/>`type Item = (&'a K, &'a mut V)` |
 
 注意到：无论使用哪种迭代器， **`K` 都是是不支持修改的**。
@@ -142,11 +142,11 @@ where
 
 #### 消费型迭代器
 
-| Method                                                       | Return Type                | Iterator                                                     |
-| ------------------------------------------------------------ | -------------------------- | ------------------------------------------------------------ |
-| `into_keys(self)`                                            | `IntoKeys<K, V>`           | `impl<K, V> Iterator for IntoKeys<K, V>`<br/>`type Item = K` |
-| `into_values(self)`                                          | `IntoValues<K, V>`         | `impl<K, V> Iterator for IntoValues<K, V>`<br/>`type Item = V` |
-| `drain(&mut self)`                                           | `Drain<'_, K, V>`          | `impl<'a, K, V> Iterator for Drain<'a, K, V>`<br/>`type Item = (K, V)` |
+| Method                                                                                                                | Return Type                | Iterator                                                                                                                           |
+| --------------------------------------------------------------------------------------------------------------------- | -------------------------- | ---------------------------------------------------------------------------------------------------------------------------------- |
+| `into_keys(self)`                                                                                                     | `IntoKeys<K, V>`           | `impl<K, V> Iterator for IntoKeys<K, V>`<br/>`type Item = K`                                                                       |
+| `into_values(self)`                                                                                                   | `IntoValues<K, V>`         | `impl<K, V> Iterator for IntoValues<K, V>`<br/>`type Item = V`                                                                     |
+| `drain(&mut self)`                                                                                                    | `Drain<'_, K, V>`          | `impl<'a, K, V> Iterator for Drain<'a, K, V>`<br/>`type Item = (K, V)`                                                             |
 | `drain_filter<F>(&mut self, pred: F) -> DrainFilter<'_, K, V, F>`<br/>`where`<br/>    `F: FnMut(&K, &mut V) -> bool,` | `DrainFilter<'_, K, V, F>` | `impl<K, V, F> Iterator for DrainFilter<'_, K, V, F>`<br/>`where`<br/>    `F: FnMut(&K, &mut V) -> bool,`<br/>`type Item = (K, V)` |
 
 上面几个迭代器，可以分别访问到 k、v 和 k-v，按需使用。
@@ -157,9 +157,9 @@ where
 
 #### 清除和保留
 
-| Method                                                       | Return Type | Iterator |
-| ------------------------------------------------------------ | ----------- | -------- |
-| `clear(&mut self)`                                           | `()`        | N/A      |
+| Method                                                                              | Return Type | Iterator |
+| ----------------------------------------------------------------------------------- | ----------- | -------- |
+| `clear(&mut self)`                                                                  | `()`        | N/A      |
 | `retain<F>(&mut self, f: F)`<br />`where`<br /> `    F: FnMut(&K, &mut V)) -> bool` | `()`        | N/A      |
 
 `retain` 是保留符合条件的元素。
