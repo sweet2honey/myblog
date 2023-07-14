@@ -230,8 +230,10 @@ pub struct OccupiedError<'a, K: 'a, V: 'a> {
 
 *这部分的接口基本都对 `K` `Q` 有约束，具体看文档吧，就不赘述*。
 
-> K: [Borrow](https://doc.rust-lang.org/stable/std/borrow/trait.Borrow.html)<Q>
->
+> K: Borrow\<Q\>,
+> 
+> Q: Hash + Eq + ?Sized,
+> 
 > [Borrow in std::borrow - Rust (rust-lang.org)](https://doc.rust-lang.org/stable/std/borrow/trait.Borrow.html)
 
 
