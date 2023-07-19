@@ -3,6 +3,7 @@
 * [Main](README.md)
 
 * [C++](C++/)
+** [C++ 20 Guide](C++/c++20_guide.md)
 ** [References](C++/references.md)
 
 * [Rust](Rust/)
