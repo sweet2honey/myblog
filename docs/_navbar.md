@@ -3,4 +3,4 @@
 * [Main](/)
 * [C++](/C++/)
 * [Rust](/Rust/)
-* [Src](https://github.com/sweet2honey/myblog)
+* [Github](https://github.com/sweet2honey/myblog)

@@ -1,0 +1,8 @@
+﻿BasedOnStyle: LLVM
+AccessModifierOffset: -4
+AlwaysBreakTemplateDeclarations: Yes
+ColumnLimit: 110
+IndentAccessModifiers: No
+IndentWidth: 4
+SpaceAfterTemplateKeyword: No
+ReferenceAlignment: Left
