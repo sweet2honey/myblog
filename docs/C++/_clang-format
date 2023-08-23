@@ -4,5 +4,6 @@ AlwaysBreakTemplateDeclarations: Yes
 ColumnLimit: 110
 IndentAccessModifiers: No
 IndentWidth: 4
-SpaceAfterTemplateKeyword: No
+PointerAlignment: Left
 ReferenceAlignment: Left
+SpaceAfterTemplateKeyword: No
