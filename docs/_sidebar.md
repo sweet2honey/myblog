@@ -4,6 +4,7 @@
 
 * [C++](C++/)
 ** [C++ 20 Guide](C++/c++20_guide.md)
+** [Compile Time Dispatch](C++/compile_time_dispatch.md)
 ** [Meta Programming](C++/meta_programming.md)
 ** [References](C++/references.md)
 
